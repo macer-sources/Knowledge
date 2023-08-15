@@ -163,7 +163,7 @@ struct Bagel {
 
 
 ## File Export Dialog Customization 
-![图 1](../../../images/833a69e8aa6d3412f573a9bb2d8af89889569e199c9efcc55a489cd405121fe0.png)  
+![图 1](./images/833a69e8aa6d3412f573a9bb2d8af89889569e199c9efcc55a489cd405121fe0.png)  
 ```swift 
 import Foundation
 import SwiftUI
@@ -200,7 +200,7 @@ struct ExportDialogCustomization: View {
 
 
 ## Confirmation Dialog Customization 
-![图 2](../../../images/b786a3c751345c071a35ee1583521de765d88c90c86b8ef5c743b9444f1e87b6.png)  
+![图 2](./images/b786a3c751345c071a35ee1583521de765d88c90c86b8ef5c743b9444f1e87b6.png)  
 ```swift 
 import Foundation
 import SwiftUI
