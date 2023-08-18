@@ -212,8 +212,15 @@ NSLayoutConstraint *_heightConstraint =
 
 作为开发者，每个与`open access`有关系的键盘功能都有相对应的你需要承担的责任。最大程度的去尊重用户数据，并且不要把这些数据用于用户所不知道的地方。  
 
-> 开放访问键盘用户权益和开发人员责任 
-TODO: 表格   
+> 开放访问键盘用户权益和开发人员责任  
+
+|  功能   | 用户示例  |    开发者的责任   |
+|  ----  | -------- | ----------------- |      
+| 与容器App共享存储空间 | 键盘的输入法自动校正词典的UI管理 | 考虑到自动校正数据属于用户隐私数据，请不要把发送到服务器用于任何用户所不知道的目的|
+| 发送键盘输入数据到你的服务器  | 通过开发者的计算资源来增强触摸事件或者输入预测 |  除非有必要为用户提供服务，不要存储用户的音频数据或者键盘输入 | 
+| 基于互联网支持的动态自动校正  | 人名、地点、热点事件等加入到自动校正词汇中  |  不要把用户的身份和相关的信息关联起来用于任何用户未知的目的  |  
+| 通讯录访问    |   将通讯录中的人名、地点和电话号码等和用户有关的词汇加入到自动校正词典中  | 不要在用户不知道的情况下将通讯录中的数据用于任何目的  |  
+| 访问定位服务  | 将地理位置附近相关的位置名词等加入到校正词汇中   |  不要在后台使用定位。不要在用户不知道的情况下发送定位数据到服务器   |
 
 
 
@@ -252,5 +259,85 @@ Xcode的自定义键盘模板以及包含了调用`advanceToNextInputMode`方法
 
 
 
+> 下表列出了容器App和自定义键盘可以在`Info.plist`中配置的UI字符串属性  
+
+| iOS用户界面文字      | Info.plist 键 |   
+| ----------- | ----------- |
+| 系统settings键盘列表的键盘组名称	      | 容器App的info.plist的Bundle display name       |
+| settings中显示的键盘名字在全局键盘列表中显示的名字   | 键盘target的Info.plist中的Bundle display name        |
+
+
+> 注意：  
+* 系统设置键盘列表中名称显示规则： 
+    如果键盘的`info.plist`文件的`display name`和容器App的`info.plist`文件的`display name`不一致，那么`settings`列表的键盘的显示格式就是`keyboardName - hostAppName`
+    反之，如果`display name`一致，那么`settings`列表键盘名称显示就是`display name`   
+
+
+## 运行自定义键盘并连接到Xcode的调试器上  
+1. 在Xcode中，在键盘VC的代码中设置好断点。  
+2. 确认在Xcode工具栏上选择的当前`scheme`指定为键盘的方案并且选择了模拟器或者一个真机设备。  
+3. 选择 Product > Run，或者点击Xcode项目窗口左上方播放按钮。Xcode让你选择一个host APP。选择一个可以输入文本段的应用，比如通讯录或者Safari浏览器。（这里只是对键盘进行调试，不一定必须用你的容器App，只要是能够提供本文输入弹出键盘的APP都可以用来调试自定义键盘）。
+4. 点击Run
+    Xcode 在指定的App上运行。如果你是第一次在你的模拟器或者真机上运行你的键盘扩展程序，使用下面步骤在settings中启用你的键盘： 
+    * 在`Settings > General > Keyboard > Keyboards`  
+    * 点击添加新的键盘。  
+    * 在已购买键盘组中，点击你的键盘名，弹出一个模态视图来开启你的键盘。  
+    * 点击开启键盘，弹出一个警告。  
+    * 在警告视图中，点击天机键盘来完成新键盘的添加。最后点击完成。  
+
+5. 在模拟器或者真机中，唤起你的自定义键盘。  
+    在任意的有可以输入文本区域的App或者Spotlight中都可以唤起键盘，接下来就是切换到你的自定义键盘。   
+    现在你能看到你的自定义键盘了，但是在调试器还没连接。从模板创建的标准系统键盘只有一个Next Keyboard button按钮，让你可以切换到上一个使用的输入法。   
+6. 关闭键盘（这样在第8步能够在重新唤起键盘的时候调用viewDidLoad断点）  
+7. 在Xcode中，选择`Debug>Attach to Process > By Process Identifier(PID) or Name`  
+    在出现的输入框中，输入创建键盘时的键盘扩展的名称（包过空格）。默认这个名字一般都是App扩展在项目导航窗口的`group name`
+8. 点击Attach  
+9. 在任意模拟器或者你使用的真机中，点击文本输入框唤起键盘。  
+    随着你的键盘的主视图的加载，Xcode的调试器连接到你的键盘并且激活断点。    
+
+### 自定义键盘配置Info.plist文件   
+`Info.plist`文件静态的声明自定义键盘的一些特性，包过主要语言、是否要求开启完全访问。
+
+```xml
+<key>NSExtension</key>
+<dict>
+    <key>NSExtensionAttributes</key>
+    <dict>
+        <key>IsASCIICapable</key>
+        <false/>
+        <key>PrefersRightToLeft</key>
+        <false/>
+        <key>PrimaryLanguage</key>
+        <string>en-US</string>
+        <key>RequestsOpenAccess</key>
+        <false/>
+    </dict>
+    <key>NSExtensionPointIdentifier</key>
+    <string>com.apple.keyboard-service</string>
+    <key>NSExtensionPrincipalClass</key>
+    <string>KeyboardViewController</string>
+</dict>
+```
+
+> 参考[App Extension Keys](https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/AppExtensionKeys.html#//apple_ref/doc/uid/TP40014212)
+
+* `IsASCIICapable`: 
+    默认为 `NO`, 描述了键盘能否在文档中插入`ASCII`字符, 如果键盘开启了`UIKeyboardTypeASCIICapable`这个功能，请把它设置为`YES`   
+* `PrefersRightToLeft`: 
+    默认是`NO`, 设置你的键盘支持从右至左的输入方式的语言   
+* `PrimaryLanguage`: 
+    默认是`en-US`, [语言和区域描述](http://www.opensource.apple.com/source/CF/CF-476.14/CFLocaleIdentifier.c)
+* `RequestsOpenAccess`:   
+    默认是`NO`, 描述了键盘是否能够扩展它的沙盒（和主App通讯的共享缓存空间）。开启共享缓存你的键盘能够获得更多的功能：  
+    * 访问定位服务、通讯录数据、相机等，每一项第一次访问都需要用户统一。   
+    * 和容器App共享数据缓存，能够做到比如在容器App中管理自定义词典UI这样的功能。  
+    * 能够通过网络发送键盘输入数据或者其他输入事件和数据以进行服务器端处理。  
+    * 能够使用 [UIPasteboard](https://developer.apple.com/documentation/uikit/uipasteboard)  
+    * 通过`playInputClick`方法来播放击键声音。  
+    * 访问icloud，根据用户来保存键盘相关的设置，自定义校正词典等。  
+    * 访问Game Center和通过容器App使用内购。  
+    * 支持移动设备管理（MDM），与被管理的apps协同工作。  
+
+> 使用完全访问功能时，请详细阅读 [Designing for User Trust](https://developer.apple.com/library/archive/documentation/General/Conceptual/ExtensibilityPG/CustomKeyboard.html#//apple_ref/doc/uid/TP40014214-CH16-SW3)中的注意事项，确保对用户数据的尊重和保护。
 
 
