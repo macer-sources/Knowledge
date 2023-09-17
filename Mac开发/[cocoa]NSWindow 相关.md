@@ -110,3 +110,22 @@ let infoList = windowsListInfo as! [[String:Any]]
 let visibleWindows = infoList.filter{ $0["kCGWindowLayer"] as! Int == 0 && $0["kCGWindowOwnerName"] as? String == "微信" }
 
 ```
+
+5. window 透明情况下事件处理?  
+```swift
+window?.backgroundColor = NSColor.clear // Set window background color to clear  设置透明颜色  
+window?.isOpaque = false
+
+window?.contentView?.wantsLayer = true
+window?.contentView?.layer?.masksToBounds = false
+// TODO: 如果不包含 `.titled`, 透明情况下，事件将无法触发， 直接穿透控件，传递给其他 view或 app 响应  
+window?.styleMask = [.titled, .fullSizeContentView, .resizable, .borderless]
+window?.titleVisibility = .hidden
+window?.titlebarAppearsTransparent = true
+window?.standardWindowButton(.closeButton)?.isHidden = true
+window?.standardWindowButton(.miniaturizeButton)?.isHidden = true
+window?.standardWindowButton(.zoomButton)?.isHidden = true
+window?.center()
+
+```
+
